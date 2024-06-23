@@ -1,6 +1,8 @@
 # Verity Assist
 
-This is a tool to help your fireteam get past the fourth encounter of the Salvation's Edge raid: Verity.
+This is a tool to help your fireteam get past the fourth encounter of the [Salvation's Edge](https://www.destinypedia.com/Salvation%27s_Edge) raid: Verity.
+
+![Preview](images/preview.PNG)
 
 ## How do?
 
