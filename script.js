@@ -2,56 +2,60 @@ function neededShapes(shape, wall1, wall2) {
     needed = [];
     extra = [];
 
+    // What is needed to form the key?
     if(shape === 'Triangle') {
         if(wall1 != 'Square' && wall2 != 'Square') needed.push('Square');
         if(wall1 != 'Circle' && wall2 != 'Circle') needed.push('Circle');
-        if(wall1 === 'Triangle') extra.push('Triangle');
-        if(wall2 === 'Triangle') extra.push('Triangle');
-        if(wall1 === 'Circle' && wall2 === 'Circle') extra.push('Circle');
-        if(wall1 === 'Square' && wall2 === 'Square') extra.push('Square');
     }
     else if(shape === 'Square') {
         if(wall1 != 'Triangle' && wall2 != 'Triangle') needed.push('Triangle');
         if(wall1 != 'Circle' && wall2 != 'Circle') needed.push('Circle');
-        if(wall1 === 'Square') extra.push('Square');
-        if(wall2 === 'Square') extra.push('Square');
-        if(wall1 === 'Circle' && wall2 === 'Circle') extra.push('Circle');
-        if(wall1 === 'Triangle' && wall2 === 'Triangle') extra.push('Triangle');
     }
     else { 
         if(wall1 != 'Triangle' && wall2 != 'Triangle') needed.push('Triangle');
         if(wall1 != 'Square' && wall2 != 'Square') needed.push('Square');
-        if(wall1 === 'Circle') extra.push('Circle');
-        if(wall2 === 'Circle') extra.push('Circle');
-        if(wall1 === 'Triangle' && wall2 === 'Triangle') extra.push('Triangle');
-        if(wall1 === 'Square' && wall2 === 'Square') extra.push('Square');
     }
+
+    // Always need to give away what you start with
+    extra.push(wall1);
+    extra.push(wall2);
 
     return [needed, extra];
 };
 
-// Function used below
-function determineInsideShapes(obj) {
-    let shapes = {};
-    shapes.left = [];
-    shapes.middle = [];
-    shapes.right = [];
+function determineShapesForPhase1(obj) {
+    let needed = {left: [], middle:[], right:[]};
+    let extra = {left: [], middle:[], right:[]};
 
-    shapes.left = neededShapes(obj.insideGuardianLeft, obj.insideLeftWall1, obj.insideLeftWall2)[0];
-    shapes.middle = neededShapes(obj.insideGuardianMiddle, obj.insideMiddleWall1, obj.insideMiddleWall2)[0];
-    shapes.right = neededShapes(obj.insideGuardianRight, obj.insideRightWall1, obj.insideRightWall2)[0];
-    obj.insideNeededShapes = shapes;
+    if(obj.insideLeftWall1 != obj.insideGuardianLeft) {
+        needed.left.push(obj.insideGuardianLeft);
+        extra.left.push(obj.insideLeftWall1);   
+    }
+    if(obj.insideLeftWall2 != obj.insideGuardianLeft) {
+        needed.left.push(obj.insideGuardianLeft);
+        extra.left.push(obj.insideLeftWall2);   
+    }
+    if(obj.insideMiddleWall1 != obj.insideGuardianMiddle) {
+        needed.middle.push(obj.insideGuardianMiddle);
+        extra.middle.push(obj.insideMiddleWall1);   
+    }
+    if(obj.insideMiddleWall2 != obj.insideGuardianMiddle) {
+        needed.middle.push(obj.insideGuardianMiddle);
+        extra.middle.push(obj.insideMiddleWall2);   
+    }
+    if(obj.insideRightWall1 != obj.insideGuardianRight) {
+        needed.right.push(obj.insideGuardianRight);
+        extra.right.push(obj.insideRightWall1);   
+    }
+    if(obj.insideRightWall2 != obj.insideGuardianRight) {
+        needed.right.push(obj.insideGuardianRight);
+        extra.right.push(obj.insideRightWall2);   
+    }
 
-    let shapes2 = {};
-    shapes2.left = [];
-    shapes2.middle = [];
-    shapes2.right = [];
-
-    shapes2.left = neededShapes(obj.insideGuardianLeft, obj.insideLeftWall1, obj.insideLeftWall2)[1];
-    shapes2.middle = neededShapes(obj.insideGuardianMiddle, obj.insideMiddleWall1, obj.insideMiddleWall2)[1];
-    shapes2.right = neededShapes(obj.insideGuardianRight, obj.insideRightWall1, obj.insideRightWall2)[1];
-    obj.insideExtraShapes = shapes2;
+    obj.insideNeededShapes = needed;
+    obj.insideExtraShapes = extra;
 };
+
 
 function printArray(msg, array)
 {
@@ -59,6 +63,14 @@ function printArray(msg, array)
     return msg;
 
 };
+
+function removeStringFromArray(stringToRemove, array) {
+    const index = array.indexOf(stringToRemove);
+    if (index !== -1) {
+        array.splice(index, 1);
+    }
+    return array;
+}
 
 function test(obj) {
  
@@ -68,121 +80,105 @@ function test(obj) {
        !obj.insideRightWall1 || !obj.insideRightWall2)
         return "None";
     
-    determineInsideShapes(obj);
-
     steps = [];
 
-    //steps.push(printArray("Left needs: ", obj.insideNeededShapes.left));
-    //steps.push(printArray("Left must give away: ", obj.insideExtraShapes.left));
-    //steps.push(printArray("Middle needs: ", obj.insideNeededShapes.middle));
-    //steps.push(printArray("Middle must give away: ", obj.insideExtraShapes.middle));
-    //steps.push(printArray("Right needs: ", obj.insideNeededShapes.right));
-    //steps.push(printArray("Right must give away: ", obj.insideExtraShapes.right));
+    const map = new Map();
+    map.set('Circle', 0);
+    map.set('Triangle', 0);
+    map.set('Square', 0);
 
-    steps.push("<hr>");
+    map.set(obj.insideLeftWall1, map.get(obj.insideLeftWall1) + 1);
+    map.set(obj.insideLeftWall2, map.get(obj.insideLeftWall2) + 1);
+    map.set(obj.insideMiddleWall1, map.get(obj.insideMiddleWall1) + 1);
+    map.set(obj.insideMiddleWall2, map.get(obj.insideMiddleWall2) + 1);
+    map.set(obj.insideRightWall1, map.get(obj.insideRightWall1) + 1);
+    map.set(obj.insideRightWall2, map.get(obj.insideRightWall2) + 1);
 
-    let counter = 0;
-    while (obj.insideNeededShapes.left.length > 0 || obj.insideExtraShapes.left.length > 0 ||
-           obj.insideNeededShapes.middle.length > 0 || obj.insideExtraShapes.middle.length > 0 ||
-           obj.insideNeededShapes.right.length > 0  || obj.insideExtraShapes.right.length > 0)
-    {
-        counter++;
-        
-        let midShapeThatLeftNeeds = findFirstCommonString(obj.insideNeededShapes.left, obj.insideExtraShapes.middle);
-        let leftShapeThatMidNeeds = findFirstCommonString(obj.insideNeededShapes.middle, obj.insideExtraShapes.left);
-        if(midShapeThatLeftNeeds != null && leftShapeThatMidNeeds != null)
-        {
-            steps.push('Middle send <b><font color="orange">' + midShapeThatLeftNeeds + '</font></b> to left');
-            steps.push('Left send <b><font color="orange">' + leftShapeThatMidNeeds + '</font></b> to middle');
-            obj.insideNeededShapes.left = removeFirstOccurrence(obj.insideNeededShapes.left, midShapeThatLeftNeeds);
-            obj.insideNeededShapes.middle = removeFirstOccurrence(obj.insideNeededShapes.middle, leftShapeThatMidNeeds);
-            obj.insideExtraShapes.left = removeFirstOccurrence(obj.insideExtraShapes.left, leftShapeThatMidNeeds);
-            obj.insideExtraShapes.middle = removeFirstOccurrence(obj.insideExtraShapes.middle, midShapeThatLeftNeeds);
-            steps.push("----");
-            continue;
-        }
-
-        let rightShapeThatMidNeeds = findFirstCommonString(obj.insideNeededShapes.middle, obj.insideExtraShapes.right);
-        let midShapeThatRightNeeds = findFirstCommonString(obj.insideNeededShapes.right, obj.insideExtraShapes.middle);
-        if(rightShapeThatMidNeeds != null && midShapeThatRightNeeds != null)
-        {
-            steps.push('Right sends <b><font color="orange">' + rightShapeThatMidNeeds + '</font></b> to middle');
-            steps.push('Mid sends <b><font color="orange">' + midShapeThatRightNeeds + '</font></b> to right');
-            obj.insideNeededShapes.middle = removeFirstOccurrence(obj.insideNeededShapes.middle, rightShapeThatMidNeeds);
-            obj.insideNeededShapes.right = removeFirstOccurrence(obj.insideNeededShapes.right, midShapeThatRightNeeds);
-            obj.insideExtraShapes.middle = removeFirstOccurrence(obj.insideExtraShapes.middle, midShapeThatRightNeeds);
-            obj.insideExtraShapes.right = removeFirstOccurrence(obj.insideExtraShapes.right, rightShapeThatMidNeeds);
-            steps.push("----");
-            continue;
-        }
-
-        let rightShapeThatLeftNeeds = findFirstCommonString(obj.insideNeededShapes.left, obj.insideExtraShapes.right);
-        let leftShapeThatRightNeeds = findFirstCommonString(obj.insideNeededShapes.right, obj.insideExtraShapes.left);
-        if(rightShapeThatLeftNeeds != null && leftShapeThatRightNeeds != null)
-        {
-            steps.push('Right sends <b><font color="orange">' + rightShapeThatLeftNeeds + '</font></b> to left');
-            steps.push('Left sends <b><font color="orange">' + leftShapeThatRightNeeds + '</font></b> to right');
-            obj.insideNeededShapes.left = removeFirstOccurrence(obj.insideNeededShapes.left, rightShapeThatLeftNeeds);
-            obj.insideNeededShapes.right = removeFirstOccurrence(obj.insideNeededShapes.right, leftShapeThatRightNeeds);
-            obj.insideExtraShapes.left = removeFirstOccurrence(obj.insideExtraShapes.left, leftShapeThatRightNeeds);
-            obj.insideExtraShapes.right = removeFirstOccurrence(obj.insideExtraShapes.right, rightShapeThatLeftNeeds);
-            steps.push("----");
-            continue;
-        }
-
-        // If we get here, there are no "perfect" matches.  A triple swap will have to happen
-
-        if(leftShapeThatMidNeeds != null && midShapeThatRightNeeds != null && rightShapeThatLeftNeeds != null)
-        {
-            steps.push('Triple swap:');
-            steps.push('Left sends <b><font color="orange">' + leftShapeThatMidNeeds + '</font></b> to middle');
-            steps.push('Middle sends <b><font color="orange">' + midShapeThatRightNeeds + '</font></b> to right');
-            steps.push('Right sends <b><font color="orange">' + rightShapeThatLeftNeeds + '</font></b> to left');
-
-
-            obj.insideNeededShapes.left = removeFirstOccurrence(obj.insideNeededShapes.left, rightShapeThatLeftNeeds);
-            obj.insideNeededShapes.middle = removeFirstOccurrence(obj.insideNeededShapes.middle, leftShapeThatMidNeeds);
-            obj.insideNeededShapes.right = removeFirstOccurrence(obj.insideNeededShapes.right, midShapeThatRightNeeds);
-
-            obj.insideExtraShapes.left = removeFirstOccurrence(obj.insideExtraShapes.left, leftShapeThatMidNeeds);
-            obj.insideExtraShapes.middle = removeFirstOccurrence(obj.insideExtraShapes.middle, midShapeThatRightNeeds);
-            obj.insideExtraShapes.right = removeFirstOccurrence(obj.insideExtraShapes.right, rightShapeThatLeftNeeds);
-
-            continue;
-        }
-
-        if(leftShapeThatRightNeeds != null && midShapeThatLeftNeeds != null && rightShapeThatMidNeeds != null)
-            {
-                steps.push('Triple swap:');
-                steps.push('Left sends <b><font color="orange">' + leftShapeThatRightNeeds + '</font></b> to right');
-                steps.push('Middle sends <b><font color="orange">' + midShapeThatLeftNeeds + '</font></b> to left');
-                steps.push('Right sends <b><font color="orange">' + rightShapeThatMidNeeds + '</font></b> to middle');
-
-                obj.insideNeededShapes.left = removeFirstOccurrence(obj.insideNeededShapes.left, midShapeThatLeftNeeds);
-                obj.insideNeededShapes.middle = removeFirstOccurrence(obj.insideNeededShapes.middle, rightShapeThatMidNeeds);
-                obj.insideNeededShapes.right = removeFirstOccurrence(obj.insideNeededShapes.right, leftShapeThatRightNeeds);
-    
-                obj.insideExtraShapes.left = removeFirstOccurrence(obj.insideExtraShapes.left, leftShapeThatRightNeeds);
-                obj.insideExtraShapes.middle = removeFirstOccurrence(obj.insideExtraShapes.middle, midShapeThatLeftNeeds);
-                obj.insideExtraShapes.right = removeFirstOccurrence(obj.insideExtraShapes.right, rightShapeThatMidNeeds);
-    
-                continue;
-            }
-
-        if(counter > 10)
-        {
-            steps.push('<font color="red">resonance cascade. aborted.</font>');
-            break;
-        }
+    if(map.get('Circle') != 2) {
+        steps.push("<span class='text-error'>Invalid number of circles selected</span>");
+        return steps.join('<br>');
+    }
+    if(map.get('Triangle') != 2) {
+        steps.push("<span class='text-error'>Invalid number of triangles selected</span>");
+        return steps.join('<br>');
+    }
+    if(map.get('Square') != 2) {
+        steps.push("<span class='text-error'>Invalid number of squares selected</span>");
+        return steps.join('<br>');
     }
 
+    //
+    // Phase 1: Give all guardians their own shape
+    //
+    determineShapesForPhase1(obj);
 
-    if(counter > 10)
-        steps.push('<font color="red">error, may the traveler have mercy on your soul</font>');
-    else
-        steps.push("Done!");
+
+    while(obj.insideExtraShapes.left.length > 0) {
+        let shapeToPush = obj.insideExtraShapes.left[0];
+        if(obj.insideNeededShapes.middle.includes(shapeToPush)) {
+            steps.push("Left gives <span class='text-shape'>" + shapeToPush + "</span> to middle");
+            obj.insideNeededShapes.middle = removeStringFromArray(shapeToPush, obj.insideNeededShapes.middle);
+            obj.insideExtraShapes.left = removeStringFromArray(shapeToPush, obj.insideExtraShapes.left);
+            continue;
+        }
+        if(obj.insideNeededShapes.right.includes(shapeToPush)) {
+            steps.push("Left gives <span class='text-shape'>" + shapeToPush + "</span> to right");
+            obj.insideNeededShapes.right = removeStringFromArray(shapeToPush, obj.insideNeededShapes.right);
+            obj.insideExtraShapes.left = removeStringFromArray(shapeToPush, obj.insideExtraShapes.left);
+            continue;
+        }
+        steps.join('You should not see this message unless you messed with the JavaScript...');
+        break; // Shouldn't get here, break to prevent infinite loop
+    }
+
+    while(obj.insideExtraShapes.middle.length > 0) {
+        let shapeToPush = obj.insideExtraShapes.middle[0];
+        if(obj.insideNeededShapes.left.includes(shapeToPush)) {
+            steps.push("Middle gives <span class='text-shape'>" + shapeToPush + "</span> to left");
+            obj.insideNeededShapes.left = removeStringFromArray(shapeToPush, obj.insideNeededShapes.left);
+            obj.insideExtraShapes.middle = removeStringFromArray(shapeToPush, obj.insideExtraShapes.middle);
+            continue;
+        }
+        if(obj.insideNeededShapes.right.includes(shapeToPush)) {
+            steps.push("Middle gives <span class='text-shape'>" + shapeToPush + "</span> to right");
+            obj.insideNeededShapes.right = removeStringFromArray(shapeToPush, obj.insideNeededShapes.right);
+            obj.insideExtraShapes.middle = removeStringFromArray(shapeToPush, obj.insideExtraShapes.middle);
+            continue;
+        }
+        steps.join('You should not see this message unless you messed with the JavaScript...');
+        break; // Shouldn't get here, break to prevent infinite loop
+    }
+
+    while(obj.insideExtraShapes.right.length > 0) {
+        let shapeToPush = obj.insideExtraShapes.right[0];
+        if(obj.insideNeededShapes.left.includes(shapeToPush)) {
+            steps.push("Right gives <span class='text-shape'>" + shapeToPush + "</span> to left");
+            obj.insideNeededShapes.left = removeStringFromArray(shapeToPush, obj.insideNeededShapes.left);
+            obj.insideExtraShapes.right = removeStringFromArray(shapeToPush, obj.insideExtraShapes.right);
+            continue;
+        }
+        if(obj.insideNeededShapes.middle.includes(shapeToPush)) {
+            steps.push("Right gives <span class='text-shape'>" + shapeToPush + "</span> to middle");
+            obj.insideNeededShapes.middle = removeStringFromArray(shapeToPush, obj.insideNeededShapes.middle);
+            obj.insideExtraShapes.right = removeStringFromArray(shapeToPush, obj.insideExtraShapes.right);
+            continue;
+        }
+        steps.join('You should not see this message unless you messed with the JavaScript...');
+        break; // Shouldn't get here, break to prevent infinite loop
+    }
+
+    if(steps.length > 0) steps.push("<span class='text-subsection'>Phase 1 complete</span>");
+    else steps.push("<span class='text-subsection'>Phase 1 not necessary. RNGesus smiles upon you.</span>");
     
-    return steps.join('<br>');
+    steps.push("<span class='text-subsection'>Phase 2:</span>");
+
+    steps.push("Left gives <span class='text-shape'>" + obj.insideGuardianLeft + "</span> to middle");
+    steps.push("Left gives <span class='text-shape'>" + obj.insideGuardianLeft + "</span> to right");
+    steps.push("Middle gives <span class='text-shape'>" + obj.insideGuardianMiddle + "</span> to left");
+    steps.push("Middle gives <span class='text-shape'>" + obj.insideGuardianMiddle + "</span> to right");
+    steps.push("Right gives <span class='text-shape'>" + obj.insideGuardianRight + "</span> to left");
+    steps.push("Right gives <span class='text-shape'>" + obj.insideGuardianRight + "</span> to middle");
+    return steps.join("<br>");
 };
 
 function findFirstCommonString(arr1, arr2) {
