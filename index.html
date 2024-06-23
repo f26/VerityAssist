@@ -24,13 +24,13 @@
                     border-color: #4a5568;
                 }
                 .border-blue-800 {
-                    border-color: #2b6cb0;
+                    border-color: orange !important;
                 }
                 .bg-gray-300 {
                     background-color: #4a5568;
                 }
                 .text-purple-800 {
-                    color: #6b46c1;
+                    color: orange !important;
                 }
                 select,
                 input {
@@ -56,16 +56,11 @@
                 }
             }
         </style>
+        <script type="text/javascript" src="script.js"></script>
     </head>
     <body
         x-data="{
 
-        displayOptions: { 
-            showinsideImages: true,
-            showInsideSelect: true,
-            showOutsideImages: true,
-            showOutsideSelect: true, 
-        },
       twoD: ['Circle', 'Square', 'Triangle'],
       twoDWithImages: [
         {name: 'Circle', image: './images/circle.svg', raw: ''},
@@ -87,9 +82,17 @@
         {name: 'Prism', symbol1: 'Triangle', symbol2: 'Square', isPure: false, image: './images/prism.svg', raw: ''},
       ],
       insideCallouts: '',
-      insideGuardianLeft: '',
-      insideGuardianMiddle: '',
-      insideGuardianRight: '',
+      insideGuardianLeft: 'Circle',
+      insideGuardianMiddle: 'Square',
+      insideGuardianRight: 'Triangle',
+      
+      insideLeftWall1: 'Circle',
+      insideLeftWall2: 'Circle',
+      insideMiddleWall1: 'Square',
+      insideMiddleWall2: 'Square',
+      insideRightWall1: 'Triangle',
+      insideRightWall2: '',
+      
       outsideGuardianLeft: '',
       outsideGuardianMiddle: '',
       outsideGuardianRight: '',
@@ -104,34 +107,18 @@
         this.outsideGuardianRight = '';
       },
 
-      setInsideCallouts: function() {
-        if(this.insideCallouts.length === 3) {
-          let leftChar = this.insideCallouts[0].toLowerCase();
-          let middleChar = this.insideCallouts[1].toLowerCase();
-          let rightChar = this.insideCallouts[2].toLowerCase();
-          this.insideGuardianLeft = this.twoD.find(item => item[0].toLowerCase() === leftChar);
-          this.insideGuardianMiddle = this.twoD.find(item => item[0].toLowerCase() === middleChar);
-          this.insideGuardianRight = this.twoD.find(item => item[0].toLowerCase() === rightChar);
-        }
-      },
-
-      setInsideCalloutsFromSelect: function() {
-        if(this.insideGuardianLeft && this.insideGuardianMiddle && this.insideGuardianRight) {
-          this.insideCallouts = this.insideGuardianLeft[0].toUpperCase() + this.insideGuardianMiddle[0].toUpperCase() + this.insideGuardianRight[0].toUpperCase();
-        }
-      },
-
       clickInsidePicture(guardian, imageUrlName){
-            if(guardian === 'left'){
-                this.insideGuardianLeft = imageUrlName;
-                
-            } 
-            if(guardian === 'middle'){
-                this.insideGuardianMiddle = imageUrlName;
-            } 
-            if(guardian === 'right'){
-                this.insideGuardianRight = imageUrlName;
-            }
+            if(guardian === 'left')  {this.insideGuardianLeft = imageUrlName;} 
+            if(guardian === 'middle'){this.insideGuardianMiddle = imageUrlName;} 
+            if(guardian === 'right') {this.insideGuardianRight = imageUrlName;}
+            
+            if(guardian === 'leftWall1')  {this.insideLeftWall1 = imageUrlName;} 
+            if(guardian === 'leftWall2')  {this.insideLeftWall2 = imageUrlName;} 
+            if(guardian === 'middleWall1'){this.insideMiddleWall1 = imageUrlName;} 
+            if(guardian === 'middleWall2'){this.insideMiddleWall2 = imageUrlName;} 
+            if(guardian === 'rightWall1') {this.insideRightWall1 = imageUrlName;}
+            if(guardian === 'rightWall2') {this.insideRightWall2 = imageUrlName;}
+            
             //if two are selected, auto select third
             if(this.insideGuardianLeft && this.insideGuardianMiddle && !this.insideGuardianRight){
                 this.insideGuardianRight = this.twoD.find(item => item !== this.insideGuardianLeft && item !== this.insideGuardianMiddle);
@@ -142,8 +129,8 @@
             if(!this.insideGuardianLeft && this.insideGuardianMiddle && this.insideGuardianRight){
                 this.insideGuardianLeft = this.twoD.find(item => item !== this.insideGuardianMiddle && item !== this.insideGuardianRight);
             }
-            //if all are selected, reset matching
             
+            // TODO: Make it so third shapes is auto-selected?
       },
 
       neededThreeD: function() {
@@ -197,6 +184,7 @@
         }
         return retVal;
       },
+
       displayNeededSymbols: function(symbolText) {
         return symbolText.join(' <br/> ');
       },
@@ -268,22 +256,45 @@
             return step_strings.join('<br>');
         }
         return 'None';
+      },
+
+
+      displayNeededInsideSteps: function() {
+
+        return test(this);
+
+
+        //steps = [];
+        while (this.insideNeededShapes.left.length > 0   || this.insideExtraShapes.left.length > 0 ||
+               this.insideNeededShapes.middle.length > 0 || this.insideExtraShapes.middle.length > 0 ||
+               this.insideNeededShapes.right.length > 0  || this.insideExtraShapes.right.length > 0)
+        {
+            if(this.insideNeededShapes.left.length > 0)
+            {
+                if(this.insideNeededShapes.left.some(r=> this.insideNeededShapes.middle.includes(r) != undefined))
+                {
+                    step_strings.push('Found that middle has a shape that left needs!');
+                }
+            }
+
+            break;
+        
+        }
+        
+/*
+        for (i = 0; i < steps.length; i++) {
+            if (steps[i].indexOf(undefined) >= 0) {
+                return 'Unable to solve: inside or outside calls might be wrong';
+            }
+            step_strings.push(''.concat(i + 1, '. Place ', steps[i][0], ' on <b>', steps[i][1], '</b> and ', steps[i][2], ' on <b>', steps[i][3], '</b>'));
+        }
+*/
+        return step_strings.join('<br>');
       }
+
+
     }"
         x-init="() => {
-            $watch('displayOptions', (value) => {
-                Object.keys(value).forEach((key) => {
-                    localStorage.setItem(key, value[key]);
-                });
-            });
-            //watch for preference changes and write to localStorage
-            Object.keys(displayOptions).forEach((key) => {
-                const value = localStorage.getItem(key);
-                if (value) {
-                    displayOptions[key] = value === 'true';
-                }
-            });
-
             twoDWithImages.forEach((item) => {
                 fetch(item.image)
                     .then((response) => {
@@ -323,337 +334,71 @@
             <div class="flex flex-col max-w-[600px]">
                 <div class="w-full flex flex-row justify-between"></div>
                 <div class="input-group flex flex-col">
-                    <label class="whitespace-nowrap font-bold" for="nameField"
-                        >Inside Callouts</label
-                    >
-                    <input
-                        class="p-2 border-2 border-gray-300 rounded-md"
-                        type="text"
-                        placeholder="CST"
-                        id="nameField"
-                        x-model="insideCallouts"
-                        x-on:keyup="setInsideCallouts()"
-                    />
-                </div>
-                <div class="flex flex-row gap-4">
-                    <div class="w-1/3 flex flex-col gap-2">
-                        <label class="whitespace-nowrap" for="guard1"
-                            >Inside Left</label
-                        >
-                        <template x-if="displayOptions.showinsideImages">
-                            <div class="flex flex-row flex-wrap gap-2">
-                                <template x-for="imageUrl in twoDWithImages">
-                                    <div
-                                        class="h-12 w-12 p-2 cursor-pointer img-bg items-center justify-center"
-                                        x-bind:class="insideGuardianLeft === imageUrl.name ? 'border-2 border-blue-800 p-1 bg-gray-300' : 'border-2 border-gray-300 p-1 border-dark'"
-                                        x-on:click="clickInsidePicture('left', imageUrl.name)"
-                                    >
-                                        <div
-                                            class="w-full h-full"
-                                            x-html="imageUrl.raw"
-                                        ></div>
-                                    </div>
-                                </template>
-                            </div>
-                        </template>
 
-                        <template x-if="displayOptions.showInsideSelect">
-                            <select
-                                class="rounded-md border-2 border-gray-300 p-2"
-                                x-on:change="setInsideCalloutsFromSelect()"
-                                id="guard1"
-                                x-model="insideGuardianLeft"
-                            >
-                                <option value=""></option>
-                                <template x-for="item in twoD" :key="item">
-                                    <option
-                                        x-bind:value="item"
-                                        x-text="item"
-                                    ></option>
-                                </template>
-                            </select>
-                        </template>
-                    </div>
-                    <div class="w-1/3 flex flex-col gap-2">
-                        <label class="whitespace-nowrap" for="guard2"
-                            >Inside Middle</label
-                        >
-                        <template x-if="displayOptions.showinsideImages">
-                            <div class="flex flex-row flex-wrap gap-2">
-                                <template x-for="imageUrl in twoDWithImages">
-                                    <div
-                                        class="h-12 w-12 p-2 cursor-pointer img-bg items-center justify-center"
-                                        x-bind:class="insideGuardianMiddle === imageUrl.name ? 'border-2 border-blue-800 p-1 bg-gray-300' : 'border-2 border-gray-300 p-1 border-dark'"
-                                        x-on:click="clickInsidePicture('middle', imageUrl.name)"
-                                    >
-                                        <div
-                                            x-html="imageUrl.raw"
-                                            class="w-full h-full"
-                                            x-bind:alt="imageUrl.name"
-                                        />
-                                    </div>
-                                </template>
-                            </div>
-                        </template>
-                        <template x-if="displayOptions.showInsideSelect">
-                            <select
-                                class="rounded-md border-2 border-gray-300 p-2"
-                                x-on:change="setInsideCalloutsFromSelect()"
-                                id="guard2"
-                                x-model="insideGuardianMiddle"
-                            >
-                                <option value=""></option>
-                                <template x-for="item in twoD" :key="item">
-                                    <option
-                                        x-bind:value="item"
-                                        x-text="item"
-                                    ></option>
-                                </template>
-                            </select>
-                        </template>
-                    </div>
-                    <div class="w-1/3 flex flex-col gap-2">
-                        <label class="whitespace-nowrap" for="guard3"
-                            >Inside Right</label
-                        >
-                        <template x-if="displayOptions.showinsideImages">
-                            <div class="flex flex-row flex-wrap gap-2">
-                                <template x-for="imageUrl in twoDWithImages">
-                                    <div
-                                        class="h-12 w-12 p-2 cursor-pointer img-bg items-center justify-center"
-                                        x-bind:class="insideGuardianRight === imageUrl.name ? 'border-2 border-blue-800 p-1 bg-gray-300' : 'border-2 border-gray-300 p-1 border-dark'"
-                                        x-on:click="clickInsidePicture('right', imageUrl.name)"
-                                    >
-                                        <div
-                                            x-html="imageUrl.raw"
-                                            class="w-full h-full"
-                                            x-bind:src="imageUrl.image"
-                                            x-bind:alt="imageUrl.name"
-                                        />
-                                    </div>
-                                </template>
-                            </div>
-                        </template>
-                        <template x-if="displayOptions.showInsideSelect">
-                            <select
-                                class="rounded-md border-2 border-gray-300 p-2"
-                                x-on:change="setInsideCalloutsFromSelect()"
-                                id="guard3"
-                                x-model="insideGuardianRight"
-                            >
-                                <option value=""></option>
-                                <template x-for="item in twoD" :key="item">
-                                    <option
-                                        x-bind:value="item"
-                                        x-text="item"
-                                    ></option>
-                                </template>
-                            </select>
-                        </template>
-                    </div>
+                <!-- ------------------------------------------------------------------------------------------------ -->
+                <!-- Inside 2D Shapes -->
+                <!-- ------------------------------------------------------------------------------------------------ -->
+                <label class="whitespace-nowrap font-bold" for="nameField">Inside Statue Shapes:</label></br></div>
+                <div class="flex flex-row gap-4">
+                    <div class="w-1/3 flex flex-col gap-2"><div class="flex flex-row flex-wrap gap-2"><template x-for="imageUrl in twoDWithImages"><div class="h-12 w-12 p-2 cursor-pointer img-bg items-center justify-center" x-bind:class="insideGuardianLeft === imageUrl.name ? 'border-2 border-blue-800 p-1 bg-gray-300' : 'border-2 border-gray-300 p-1 border-dark'" x-on:click="clickInsidePicture('left', imageUrl.name)"><div class="w-full h-full" x-html="imageUrl.raw"></div></div></template></div></div>
+                    
+                    <div class="w-1/3 flex flex-col gap-2"><div class="flex flex-row flex-wrap gap-2"><template x-for="imageUrl in twoDWithImages"><div class="h-12 w-12 p-2 cursor-pointer img-bg items-center justify-center" x-bind:class="insideGuardianMiddle === imageUrl.name ? 'border-2 border-blue-800 p-1 bg-gray-300' : 'border-2 border-gray-300 p-1 border-dark'" x-on:click="clickInsidePicture('middle', imageUrl.name)"><div x-html="imageUrl.raw" class="w-full h-full" x-bind:alt="imageUrl.name"/></div></template></div></div>
+
+                    <div class="w-1/3 flex flex-col gap-2"><div class="flex flex-row flex-wrap gap-2"><template x-for="imageUrl in twoDWithImages"><div class="h-12 w-12 p-2 cursor-pointer img-bg items-center justify-center" x-bind:class="insideGuardianRight === imageUrl.name ? 'border-2 border-blue-800 p-1 bg-gray-300' : 'border-2 border-gray-300 p-1 border-dark'" x-on:click="clickInsidePicture('right', imageUrl.name)"><div x-html="imageUrl.raw" class="w-full h-full" x-bind:alt="imageUrl.name"/></div></template></div></div>
                 </div>
-                <label class="whitespace-nowrap font-bold pt-4" for="nameField">
-                    Outside Callouts
-                </label>
+                
+                <!-- ------------------------------------------------------------------------------------------------ -->
+                <!-- Inside wall shapes -->
+                <!-- ------------------------------------------------------------------------------------------------ -->
+                <br><br>
+                <div class="input-group flex flex-col"><label class="whitespace-nowrap font-bold" for="nameField">Inside Wall Shapes:</label></br></div>
+                <div class="flex flex-row gap-4">
+                    <div class="w-1/3 flex flex-col gap-2"><div class="flex flex-row flex-wrap gap-2">
+                        <template x-for="imageUrl in twoDWithImages"><div class="h-12 w-12 p-2 cursor-pointer img-bg items-center justify-center" x-bind:class="insideLeftWall1 === imageUrl.name ? 'border-2 border-blue-800 p-1 bg-gray-300' : 'border-2 border-gray-300 p-1 border-dark'" x-on:click="clickInsidePicture('leftWall1', imageUrl.name)"><div class="w-full h-full" x-html="imageUrl.raw"></div></div></template>
+                        <template x-for="imageUrl in twoDWithImages"><div class="h-12 w-12 p-2 cursor-pointer img-bg items-center justify-center" x-bind:class="insideLeftWall2 === imageUrl.name ? 'border-2 border-blue-800 p-1 bg-gray-300' : 'border-2 border-gray-300 p-1 border-dark'" x-on:click="clickInsidePicture('leftWall2', imageUrl.name)"><div class="w-full h-full" x-html="imageUrl.raw"></div></div></template>
+                    </div></div>
+                    
+                    <div class="w-1/3 flex flex-col gap-2"><div class="flex flex-row flex-wrap gap-2">
+                        <template x-for="imageUrl in twoDWithImages"><div class="h-12 w-12 p-2 cursor-pointer img-bg items-center justify-center" x-bind:class="insideMiddleWall1 === imageUrl.name ? 'border-2 border-blue-800 p-1 bg-gray-300' : 'border-2 border-gray-300 p-1 border-dark'" x-on:click="clickInsidePicture('middleWall1', imageUrl.name)"><div class="w-full h-full" x-html="imageUrl.raw"></div></div></template>
+                        <template x-for="imageUrl in twoDWithImages"><div class="h-12 w-12 p-2 cursor-pointer img-bg items-center justify-center" x-bind:class="insideMiddleWall2 === imageUrl.name ? 'border-2 border-blue-800 p-1 bg-gray-300' : 'border-2 border-gray-300 p-1 border-dark'" x-on:click="clickInsidePicture('middleWall2', imageUrl.name)"><div class="w-full h-full" x-html="imageUrl.raw"></div></div></template>
+                    </div></div>
+
+                    <div class="w-1/3 flex flex-col gap-2"><div class="flex flex-row flex-wrap gap-2">
+                        <template x-for="imageUrl in twoDWithImages"><div class="h-12 w-12 p-2 cursor-pointer img-bg items-center justify-center" x-bind:class="insideRightWall1 === imageUrl.name ? 'border-2 border-blue-800 p-1 bg-gray-300' : 'border-2 border-gray-300 p-1 border-dark'" x-on:click="clickInsidePicture('rightWall1', imageUrl.name)"><div class="w-full h-full" x-html="imageUrl.raw"></div></div></template>
+                        <template x-for="imageUrl in twoDWithImages"><div class="h-12 w-12 p-2 cursor-pointer img-bg items-center justify-center" x-bind:class="insideRightWall2 === imageUrl.name ? 'border-2 border-blue-800 p-1 bg-gray-300' : 'border-2 border-gray-300 p-1 border-dark'" x-on:click="clickInsidePicture('rightWall2', imageUrl.name)"><div class="w-full h-full" x-html="imageUrl.raw"></div></div></template>
+                    </div></div>
+
+                </div>
+
+                <br>
+                <div class="font-bold text-lg">Inside Steps:</div>
+                <div><span x-html="displayNeededInsideSteps()"></span></div>
+
+                <!-- ------------------------------------------------------------------------------------------------ -->
+                <!-- Outside  -->
+                <!-- ------------------------------------------------------------------------------------------------ -->
+                <br><label class="whitespace-nowrap font-bold pt-4" for="nameField">Outside 3D Shapes:</label><br>
 
                 <div class="flex flex-row gap-4">
-                    <div></div>
-                    <div class="flex flex-col w-1/3 gap-2">
-                        <label class="whitespace-nowrap" for="guard4"
-                            >Outside Left</label
-                        >
-                        <template x-if="displayOptions.showOutsideImages">
-                            <div class="flex flex-row flex-wrap gap-2">
-                                <template x-for="imageUrl in threeD">
-                                    <div
-                                        class="h-12 w-12 p-2 cursor-pointer img-bg items-center justify-center"
-                                        x-bind:class="outsideGuardianLeft === imageUrl.name ? 'border-2 border-blue-800 bg-gray-300 p-1' : 'border-2 border-gray-300 p-1 border-dark'"
-                                        x-on:click="outsideGuardianLeft = imageUrl.name"
-                                    >
-                                        <div
-                                            x-html="imageUrl.raw"
-                                            class="w-full h-full"
-                                            x-bind:src="imageUrl.image"
-                                            x-bind:alt="imageUrl.name"
-                                        />
-                                    </div>
-                                </template>
-                            </div>
-                        </template>
-                        <template x-if="displayOptions.showOutsideSelect">
-                            <select
-                                class="rounded-md border-2 border-gray-300 p-2"
-                                id="guard4"
-                                x-model="outsideGuardianLeft"
-                            >
-                                <option value=""></option>
-                                <template
-                                    x-for="item in threeD"
-                                    :key="item.name"
-                                >
-                                    <option
-                                        x-bind:value="item.name"
-                                        x-text="item.name"
-                                    ></option>
-                                </template>
-                            </select>
-                        </template>
-                    </div>
-                    <div class="flex flex-col w-1/3 gap-2">
-                        <label class="whitespace-nowrap" for="guard5"
-                            >Outside Middle</label
-                        >
-                        <template x-if="displayOptions.showOutsideImages">
-                            <div class="flex flex-row flex-wrap gap-2">
-                                <template x-for="imageUrl in threeD">
-                                    <div
-                                        class="h-12 w-12 p-2 cursor-pointer img-bg items-center justify-center"
-                                        x-bind:class="outsideGuardianMiddle === imageUrl.name ? 'border-2 border-blue-800 bg-gray-300 p-1' : 'border-2 border-gray-300 p-1 border-dark'"
-                                        x-on:click="outsideGuardianMiddle = imageUrl.name"
-                                    >
-                                        <div
-                                            x-html="imageUrl.raw"
-                                            class="w-full h-full"
-                                            x-bind:src="imageUrl.image"
-                                            x-bind:alt="imageUrl.name"
-                                        />
-                                    </div>
-                                </template>
-                            </div>
-                        </template>
-                        <template x-if="displayOptions.showOutsideSelect">
-                            <select
-                                class="rounded-md border-2 border-gray-300 p-2"
-                                id="guard5"
-                                x-model="outsideGuardianMiddle"
-                            >
-                                <option value=""></option>
-                                <template
-                                    x-for="item in threeD"
-                                    :key="item.name"
-                                >
-                                    <option
-                                        x-bind:value="item.name"
-                                        x-text="item.name"
-                                    ></option>
-                                </template>
-                            </select>
-                        </template>
-                    </div>
-                    <div class="flex flex-col w-1/3 gap-2">
-                        <label class="whitespace-nowrap" for="guard6"
-                            >Outside Right</label
-                        >
-                        <template x-if="displayOptions.showOutsideImages">
-                            <div class="flex flex-row flex-wrap gap-2">
-                                <template x-for="imageUrl in threeD">
-                                    <div
-                                        class="h-12 w-12 p-2 cursor-pointer img-bg items-center justify-center"
-                                        x-bind:class="outsideGuardianRight === imageUrl.name ? 'border-2 border-blue-800 bg-gray-300 p-1' : 'border-2 border-gray-300 p-1 border-dark'"
-                                        x-on:click="outsideGuardianRight = imageUrl.name"
-                                    >
-                                        <div
-                                            x-html="imageUrl.raw"
-                                            class="w-full h-full"
-                                            x-bind:src="imageUrl.image"
-                                            x-bind:alt="imageUrl.name"
-                                        />
-                                    </div>
-                                </template>
-                            </div>
-                        </template>
-                        <template x-if="displayOptions.showOutsideSelect">
-                            <select
-                                class="rounded-md border-2 border-gray-300 p-2"
-                                id="guard6"
-                                x-model="outsideGuardianRight"
-                            >
-                                <option value=""></option>
-                                <template
-                                    x-for="item in threeD"
-                                    :key="item.name"
-                                >
-                                    <option
-                                        x-bind:value="item.name"
-                                        x-text="item.name"
-                                    ></option>
-                                </template>
-                            </select>
-                        </template>
-                    </div>
+                    <div class="flex flex-col w-1/3 gap-2"><div class="flex flex-row flex-wrap gap-2"><template x-for="imageUrl in threeD"><div class="h-12 w-12 p-2 cursor-pointer img-bg items-center justify-center" x-bind:class="outsideGuardianLeft === imageUrl.name ? 'border-2 border-blue-800 bg-gray-300 p-1' : 'border-2 border-gray-300 p-1 border-dark'" x-on:click="outsideGuardianLeft = imageUrl.name"><div x-html="imageUrl.raw" class="w-full h-full" x-bind:src="imageUrl.image" x-bind:alt="imageUrl.name"/></div></template></div></div>
+
+                    <div class="flex flex-col w-1/3 gap-2"><div class="flex flex-row flex-wrap gap-2"><template x-for="imageUrl in threeD"><div class="h-12 w-12 p-2 cursor-pointer img-bg items-center justify-center" x-bind:class="outsideGuardianMiddle === imageUrl.name ? 'border-2 border-blue-800 bg-gray-300 p-1' : 'border-2 border-gray-300 p-1 border-dark'" x-on:click="outsideGuardianMiddle = imageUrl.name"><div x-html="imageUrl.raw" class="w-full h-full" x-bind:src="imageUrl.image" x-bind:alt="imageUrl.name"/></div></template></div></div>
+
+                    <div class="flex flex-col w-1/3 gap-2"><div class="flex flex-row flex-wrap gap-2"><template x-for="imageUrl in threeD"><div class="h-12 w-12 p-2 cursor-pointer img-bg items-center justify-center" x-bind:class="outsideGuardianRight === imageUrl.name ? 'border-2 border-blue-800 bg-gray-300 p-1' : 'border-2 border-gray-300 p-1 border-dark'" x-on:click="outsideGuardianRight = imageUrl.name"><div x-html="imageUrl.raw" class="w-full h-full" x-bind:src="imageUrl.image" x-bind:alt="imageUrl.name"/></div></template></div></div>
+
                 </div>
-                <div
-                    class="flex flex-col border-2 pt-2 pb-4 px-4 rounded-md w-full mt-4"
-                >
-                    <div class="font-bold text-lg">Final Shapes</div>
-                    <div class="w-full flex flex-row">
-                        <div class="flex flex-col w-1/3">
-                            <span
-                                class="text-purple-800 font-bold"
-                                x-text="neededThreeD()[0]?.name"
-                            >
-                            </span>
-                        </div>
-                        <div class="flex flex-col gap-2 w-1/3">
-                            <span
-                                class="text-purple-800 font-bold"
-                                x-text="neededThreeD()[1]?.name"
-                            ></span>
-                        </div>
-                        <div class="flex flex-col gap-2 w-1/3">
-                            <span
-                                class="text-purple-800 font-bold"
-                                x-text="neededThreeD()[2]?.name"
-                            ></span>
-                        </div>
-                    </div>
-                    <div class="font-bold text-lg">Steps</div>
-                    <dtv>
-                        <span x-html="displayNeededSteps(neededSwaps())"></span>
-                    </dtv>
+            
+                <br><br>
+                <div class="font-bold text-lg">Final Shapes</div>
+                <div class="w-full flex flex-row">
+                    <div class="flex flex-col gap-2 w-1/3"><span class="text-purple-800 font-bold" x-text="neededThreeD()[0]?.name"></span></div>
+                    <div class="flex flex-col gap-2 w-1/3"><span class="text-purple-800 font-bold" x-text="neededThreeD()[1]?.name"></span></div>
+                    <div class="flex flex-col gap-2 w-1/3"><span class="text-purple-800 font-bold" x-text="neededThreeD()[2]?.name"></span></div>
                 </div>
+                <div><span x-html="displayNeededSteps(neededSwaps())"></span></div>
+               
             </div>
 
-            <div
-                class="flex flex-col gap-2 mt-12 border-2 border-gray-300 rounded-md p-4 align-center text-center"
-            >
-                <a
-                    class="flex flex-col justify-center"
-                    href="https://github.com/seratne/salvations-edge-verity"
-                >
-                    <div
-                        class="flex flex-col items-center gap-2 justify-center"
-                    >
-                        <div>View Github Project</div>
-                        <img
-                            style="width: 3rem"
-                            src="./images/github.svg"
-                            alt="Github"
-                        />
-                    </div>
-                </a>
-                <div class="font-semibold">Contributors</div>
-                <div class="flex flex-row items-center gap-2">
-                    seratne
-                    <a href="https://www.reddit.com/u/seratne/"
-                        ><img
-                            src="./images/reddit.svg"
-                            alt="Reddit"
-                            style="height: 1rem"
-                        />
-                    </a>
-                </div>
-                <div class="flex flex-row items-center gap-2">
-                    inertxenon
-                    <a href="https://www.reddit.com/u/inertxenon/"
-                        ><img
-                            src="./images/reddit.svg"
-                            alt="Reddit"
-                            style="height: 1rem"
-                        />
-                    </a>
-                </div>
-            </div>
         </div>
     </body>
 </html>
