@@ -261,9 +261,8 @@
                 if (steps[i].indexOf(undefined) >= 0) {
                     return '<span class=\'text-error\'>ERROR: Unable to solve, double check your selections.</span>';
                 }
-                step_strings.push(''.concat(i + 1, '. Place ', steps[i][0], ' on <b>', steps[i][1], '</b> and ', steps[i][2], ' on <b>', steps[i][3], '</b>'));
+                step_strings.push('<input type=\'checkbox\' />&nbsp;&nbsp;'.concat(i + 1, '. Place ', steps[i][0], ' on <b>', steps[i][1], '</b> and ', steps[i][2], ' on <b>', steps[i][3], '</b>'));
             }
-
             return step_strings.join('<br>');
         }
         return 'None';
